@@ -213,14 +213,10 @@ function listenForMessages() {
 
 function displayMessage(username, message, timestamp) {
   var chatDiv = document.getElementById("chat");
+var messageDiv = document.createElement("div");
 
-  var messageDiv = document.createElement("div");
-  messageDiv.textContent = username + ": " + message;
+  messageDiv.innerHTML = "<b>" + username + ":</b> " + message + "<span>" + formatDate(timestamp) + "</span>";
 
-  var timestampSpan = document.createElement("span");
-  timestampSpan.textContent = formatDate(timestamp);
-
-  messageDiv.appendChild(timestampSpan);
   chatDiv.appendChild(messageDiv);
 
   // You may want to enhance this further, such as scrolling to the latest message.

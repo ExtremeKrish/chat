@@ -1,0 +1,249 @@
+<!DOCTYPE html>
+<html lang="en" translate="no">
+
+<head>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta charset="UTF-8">
+<meta name="google" content="notranslate">
+    <title>Home</title>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.1.0/jquery.min.js"></script>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css"
+          integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u"
+          crossorigin="anonymous">
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap-theme.min.css"
+          integrity="sha384-rHyoN1iRsVXV4nD0JutlnGaslCJuC7uwjduW9SVrLvRYooPp2bWYgmgJQIXwl/Sp"
+          crossorigin="anonymous">
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"
+            integrity="sha384-Tc5IQib027qvyjSMfHjOMaLkfuWVxZxUPnCJA7l2mCWNIpG9mGCD8wGNIcPD7Txa"
+            crossorigin="anonymous"></script>
+    <script src="https://www.gstatic.com/firebasejs/3.3.0/firebase.js"></script>
+    <link rel="stylesheet" href="https://cdn.firebase.com/libs/firechat/3.0.1/firechat.min.css" />
+    <script src="https://cdn.firebase.com/libs/firechat/3.0.1/firechat.min.js"></script>
+
+<style type="text/css">
+.goog-te-banner-frame.skiptranslate {
+    display: none !important;
+    } 
+.footer {
+display:flex;
+position:fixed;
+bottom:0;
+left:0;
+right:0;
+
+}
+.footer input {
+flex-grow:1;
+}
+.footer input , footer button{
+padding:12px;
+font-size:16px;
+}
+#login-signup{
+position:fixed;
+top:50%;
+left:50%;
+transform:translate(-50%,-50%);
+}
+#chat{
+padding:12px;
+font-size:18px;
+}
+</style>
+
+</head>
+
+<body class=""  >
+    <div id="login-signup">
+        <input type="text" id="username" placeholder="Enter Username" > <br>
+        <input type="password" id="password" placeholder="Enter Password" > <br> <br>
+
+        <button class="signup">Login</button> <br> <br>
+    </div>
+    <section id="area" >
+            <div id="chat"></div>
+<section class="footer">
+<input type="text" id="message" placeholder="Type your message">
+<button class="send-message">Send</button>
+</section>
+</section>
+    <script type="text/javascript" src="app.js"></script>
+</body>
+
+
+<script type="text/javascript">
+
+
+var config = {
+    apiKey: "AIzaSyBxjh9aWtXpq7ki3d8JOCknMtMEbn9Ze5Y",
+    authDomain: "re96ev.firebaseapp.com",
+    databaseURL: "https://re96ev-default-rtdb.firebaseio.com",
+    projectId: "re96ev",
+    storageBucket: "re96ev.appspot.com",
+    messagingSenderId: "898951921391",
+    appId: "1:898951921391:web:adbba9db68380d3ec0651a",
+    measurementId: "G-FPP98JDRNZ"
+};
+firebase.initializeApp(config);
+    $("#area").hide();
+    document.querySelector('.footer').style.display = "none";
+var db = firebase.database();
+
+
+
+$(".signup").on("click", function (event) {
+    event.preventDefault();
+
+    var username = $("#username").val().trim();
+    var password = $("#password").val().trim();
+
+    createUser(username, password);
+});
+
+$(".send-message").on("click", function (event) {
+    event.preventDefault();
+               var inputField = document.getElementById('message');
+        inputField.focus();
+    var message = $("#message").val().trim();
+    var username = $("#username").val().trim();
+
+    if (message && username) {
+        sendMessage(username, message);
+        $("#message").val(""); // Clear the message input after sending
+    } else {
+        alert("Please enter a message and log in first");
+    }
+});
+
+function loginUser(username, password) {
+    var userRef = db.ref("members/" + username);
+
+    userRef.once("value")
+        .then(function (snapshot) {
+            var user = snapshot.val();
+
+            if (user && user.password === password) {
+
+                hideLoginSignup();
+                listenForMessages();
+ 
+
+             
+                saveCookie('id', username, 365); // Saves 'myCookie' with value 'cookieValue' that expires in 7 days
+                saveCookie('pwd', password, 365); 
+                
+console.log(getCookie("id"));
+            } else {
+                alert("Invalid username or password");
+            }
+        })
+        .catch(function (error) {
+            console.error("Error logging in:", error);
+        });
+}
+
+function createUser(username, password) {
+    var userRef = db.ref("members/" + username);
+
+    userRef.once("value")
+        .then(function (snapshot) {
+            var user = snapshot.val();
+
+            if (user) {
+                console.log("User already exists");
+                loginUser(username, password);
+            } else {
+                // Create user
+                userRef.set({
+                    password: password
+                }, function (error) {
+                    if (error) {
+                        console.error("Error creating user:", error);
+                    } else {
+
+                        hideLoginSignup();
+                        listenForMessages();
+                    }
+                });
+            }
+        })
+        .catch(function (error) {
+            console.error("Error creating user:", error);
+        });
+}
+
+function hideLoginSignup() {
+    $("#login-signup").hide();
+        $("#area").show();
+            document.querySelector('.footer').style.display = "flex";
+}
+
+function sendMessage(username, message) {
+    var chatRef = db.ref("chat");
+    var timestamp = firebase.database.ServerValue.TIMESTAMP;
+
+    chatRef.push({
+        username: username,
+        message: message,
+        timestamp: timestamp
+    });
+}
+
+function listenForMessages() {
+    var chatRef = db.ref("chat");
+
+    chatRef.on("child_added", function (snapshot) {
+        var message = snapshot.val();
+        displayMessage(message.username, message.message);
+    });
+}
+
+function displayMessage(username, message) {
+    var chatDiv = $("#chat");
+    var messageDiv = $("<div>").text(username + ": " + message);
+    chatDiv.append(messageDiv);
+    // You may want to enhance this further, such as scrolling to the latest message.
+    // For simplicity, this example just appends messages to the chat div.
+}
+function getCookie(cname) {
+  let name = cname + "=";
+  let decodedCookie = decodeURIComponent(document.cookie);
+  let ca = decodedCookie.split(';');
+  for(let i = 0; i <ca.length; i++) {
+    let c = ca[i];
+    while (c.charAt(0) == ' ') {
+      c = c.substring(1);
+    }
+    if (c.indexOf(name) == 0) {
+      return c.substring(name.length, c.length);
+    }
+  }
+  return "";
+}
+function saveCookie(cname, cvalue, exdays) {
+  const d = new Date();
+  d.setTime(d.getTime() + (exdays*24*60*60*1000));
+  let expires = "expires="+ d.toUTCString();
+  document.cookie = cname + "=" + cvalue + ";" + expires + ";path=/";
+}
+function cookieExists(name) {
+    return document.cookie.split(';').some(cookie => cookie.trim().startsWith(name + '='));
+}
+</script>
+<script>
+
+if (cookieExists('id')) {
+$("#login-signup").hide();
+        $('#area').show();
+        
+const id = getCookie('id');
+const pwd = getCookie('pwd');
+    createUser(id, pwd);
+}else{
+    document.querySelector('.footer').style.display = "none";
+}
+
+
+</script>
+</html>

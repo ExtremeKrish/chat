@@ -56,6 +56,11 @@ font-size:16px;
         background-color: whitesmoke;
         padding: 8px;
     }
+    #chat div span {
+      display: block;
+      font-size: 12px;
+      float: right;
+    }
 </style>
 
 </head>
@@ -204,16 +209,39 @@ function listenForMessages() {
 
     chatRef.on("child_added", function (snapshot) {
         var message = snapshot.val();
-        displayMessage(message.username, message.message);
+        displayMessage(message.username, message.message, message.timestamp);
     });
 }
 
-function displayMessage(username, message) {
-    var chatDiv = $("#chat");
-    var messageDiv = $("<div>").text(username + ": " + message);
-    chatDiv.append(messageDiv);
-    // You may want to enhance this further, such as scrolling to the latest message.
-    // For simplicity, this example just appends messages to the chat div.
+function displayMessage(username, message, timestamp) {
+  var chatDiv = document.getElementById("chat");
+
+  var messageDiv = document.createElement("div");
+  messageDiv.textContent = username + ": " + message;
+
+  var timestampSpan = document.createElement("span");
+  timestampSpan.textContent = formatDate(timestamp);
+
+  messageDiv.appendChild(timestampSpan);
+  chatDiv.appendChild(messageDiv);
+
+  // You may want to enhance this further, such as scrolling to the latest message.
+  // For simplicity, this example just appends messages to the chat div.
+}
+
+function formatDate(milliseconds) {
+  const date = new Date(milliseconds);
+
+  const options = {
+    year: 'numeric',
+    month: 'short',
+    day: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit',
+    hour12: true
+  };
+
+  return new Intl.DateTimeFormat('en-US', options).format(date);
 }
 function getCookie(cname) {
   let name = cname + "=";

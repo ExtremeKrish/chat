@@ -138,7 +138,7 @@ $(".send-message").on("click", function (event) {
                var inputField = document.getElementById('message');
         inputField.focus();
     var message = $("#message").val().trim();
-    var username = $("#username").val().trim();
+    var username = getCookie('id');
 
     if (message && username) {
         sendMessage(username, message);
@@ -229,20 +229,36 @@ function listenForMessages() {
 
     chatRef.on("child_added", function (snapshot) {
         var message = snapshot.val();
+        
         displayMessage(message.username, message.message, message.timestamp);
     });
 }
 
 function displayMessage(username, message, timestamp) {
-  var chatDiv = document.getElementById("chat");
-var messageDiv = document.createElement("div");
+    var chatDiv = document.getElementById("chat");
+    var messageDiv = document.createElement("div");
 
-  messageDiv.innerHTML = "<b>" + username + ":</b> " + message + "<span>" + formatDate(timestamp) + "</span>";
+    // Check for links in the message and convert them to clickable HTML links
+    var messageWithLinks = convertLinks(message);
 
-  chatDiv.appendChild(messageDiv);
+    messageDiv.innerHTML =
+        "<b>" + username + ":</b> " + messageWithLinks + "<span>" + formatDate(timestamp) + "</span>";
 
-  // You may want to enhance this further, such as scrolling to the latest message.
-  // For simplicity, this example just appends messages to the chat div.
+    chatDiv.appendChild(messageDiv);
+    // You may want to enhance this further, such as scrolling to the latest message.
+    // For simplicity, this example just appends messages to the chat div.
+}
+
+function convertLinks(message) {
+    // Regular expression to find URLs within the message
+    var urlRegex = /(https?:\/\/[^\s]+)/g;
+
+    // Replace URLs with clickable HTML links
+    var messageWithLinks = message.replace(urlRegex, function (url) {
+        return '<a href="' + url + '" target="_blank">' + url + '</a>';
+    });
+
+    return messageWithLinks;
 }
 
 function formatDate(milliseconds) {
@@ -292,7 +308,8 @@ $("#login-signup").hide();
         
 const id = getCookie('id');
 const pwd = getCookie('pwd');
-    createUser(id, pwd);
+console.log(id + ' ' + pwd);
+    loginUser(id, pwd);
 }else{
     document.querySelector('.footer').style.display = "none";
 }

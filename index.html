@@ -20,31 +20,38 @@
 .goog-te-banner-frame.skiptranslate {
     display: none !important;
     } 
+    .navbar{
+      position:fixed;
+      left:0;
+      right:0;
+      top:0;
+      z-index: 999;
+    }
 .footer {
 display:none;
 position:fixed;
 bottom:0;
 left:0;
 right:0;
-
+background: #1e1e1e;
 }
 body{
   background:rgb(10,10,10);
 }
 .footer input {
 flex-grow:1;
-
+background-color: transparent!important;
 outline:none;
-
+color: white;
 }
-.footer input , footer button{
+.footer input , .footer button{
 padding:12px;
 font-size:16px;
-border-top: 2px solid black;
-border-left: 1px solid black;
-border-right: 1px solid black;
+border: none;
 outline: none;
+background-color: transparent!important;
 }
+
 #login-signup{
 position:fixed;
 top:50%;
@@ -54,42 +61,65 @@ transform:translate(-50%,-50%);
 #chat{
 padding:12px;
 font-size:16px;
+padding-bottom: 56px;
+padding-top: 84px;
+display:flex;
+flex-direction: column;
 }
-    #chat div{
+    #chat>div>div{
         border-bottom:2px solid black;
-        border-radius:12px;
+        border-radius:20px;
         background-color:rgba(255,255,255,0.1);
-        padding: 8px;
-        padding-bottom:16px;
+        padding:5px 13px;
+       
+        color:white;
+        max-width: 80%;
+       
+        word-wrap: break-word;
     }
+    #chat>div>div.self{
+      float: right;
+      
+    }
+    
     #chat div span {
       display: block;
-      font-size: 12px;
+      font-size: 10px;
       float: right;
+      bottom: 0;
       position: relative ;
       color: floralwhite;
+      display:flex;
+      padding-top:10px;
+      padding-bottom:0;
+      padding-left:8px;
     }
     #chat div b{
       
       color: #4caf50;
     }
+    #chat>div>div.self b{
+      
+      display: none
+    }
+    #chat::-webkit-scrollbar {
+display: none;
+}
+#chat {
+    -ms-overflow-style: none;  /* Internet Explorer 10+ */
+    scrollbar-width: none;  /* Firefox */
+}
 </style>
 
 </head>
 
 <body class=""  >
-  <nav class="navbar navbar-dark bg-dark">
-  <a class="navbar-brand" href="#">Chatroom</a>
-  <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNavAltMarkup" aria-controls="navbarNavAltMarkup" aria-expanded="false" aria-label="Toggle navigation">
-    <span class="navbar-toggler-icon"></span>
-  </button>
-  <div class="collapse navbar-collapse" id="navbarNavAltMarkup">
-    <div class="navbar-nav">
-      <div class="form-check form-switch">
-        <input class="form-check-input" onchange="req()" type="checkbox" role="switch" id="flexSwitchCheckDefault">
-        <label class="form-check-label" for="flexSwitchCheckDefault">Notifications</label>
-      </div>
-    </div>
+<nav class="navbar navbar-dark bg-dark navbar-expand-sm flex-nowrap align-items-start">
+
+  
+<div class="d-flex flex-column">
+      <a class="navbar-brand mr-auto" href="#">Chatroom</a>
+    <small id="status" style="color: white">...</small>
   </div>
 </nav>
 
@@ -104,7 +134,7 @@ font-size:16px;
             <div id="chat"></div>
 <section class="footer">
 <input type="text" id="message" placeholder="Type your message">
-<button class="send-message">Send</button>
+<button class="send-message"><svg fill="white" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" version="1.1" class="mdi mdi-send" width="24" height="24" viewBox="0 0 24 24"><path d="M2,21L23,12L2,3V10L17,12L2,14V21Z" /></svg></button>
 </section>
 </section>
     <script type="text/javascript" src="app.js"></script>
@@ -165,18 +195,18 @@ function loginUser(username, password) {
     userRef.once("value")
         .then(function (snapshot) {
             var user = snapshot.val();
-
             if (user && user.password === password) {
-
                 hideLoginSignup();
                 listenForMessages();
- 
-
-             
                 saveCookie('id', username, 365); // Saves 'myCookie' with value 'cookieValue' that expires in 7 days
                 saveCookie('pwd', password, 365); 
-                
-console.log(getCookie("id"));
+                console.log(getCookie("id"));
+                var userStatusRef = firebase.database().ref('members/' + username + '/status');
+                  firebase.database().ref('.info/connected').on('value', function(snapshot) {
+                    if (snapshot.val()) {
+                    userStatusRef.onDisconnect().set(firebase.database.ServerValue.TIMESTAMP);                      userStatusRef.set('online');
+                    }
+                  });
             } else {
                 alert("Invalid username or password");
             }
@@ -184,6 +214,7 @@ console.log(getCookie("id"));
         .catch(function (error) {
             console.error("Error logging in:", error);
         });
+        
 }
 
 function createUser(username, password) {
@@ -247,15 +278,25 @@ function listenForMessages() {
 
 function displayMessage(username, message, timestamp) {
     var chatDiv = document.getElementById("chat");
-    var messageDiv = document.createElement("div");
+    var messageDiv_parent = document.createElement("div");
 
+    var messageDiv = document.createElement("div");
+if(username  == getCookie("id")){
+  messageDiv.classList += "self";
+  
+}
     // Check for links in the message and convert them to clickable HTML links
     var messageWithLinks = convertLinks(message);
 
+    // If there are no links, use the original message
+    messageWithLinks = messageWithLinks || message;
+
     messageDiv.innerHTML =
         "<b>" + username + ":</b> " + messageWithLinks + "<span>" + formatDate(timestamp) + "</span>";
+    messageDiv_parent.appendChild(messageDiv);
 
-    chatDiv.appendChild(messageDiv);
+    chatDiv.appendChild(messageDiv_parent);
+    scrollToBottom();
     // You may want to enhance this further, such as scrolling to the latest message.
     // For simplicity, this example just appends messages to the chat div.
 }
@@ -272,13 +313,11 @@ function convertLinks(message) {
     return messageWithLinks;
 }
 
+
 function formatDate(milliseconds) {
   const date = new Date(milliseconds);
 
   const options = {
-    year: 'numeric',
-    month: 'short',
-    day: 'numeric',
     hour: '2-digit',
     minute: '2-digit',
     hour12: true
@@ -310,6 +349,66 @@ function saveCookie(cname, cvalue, exdays) {
 function cookieExists(name) {
     return document.cookie.split(';').some(cookie => cookie.trim().startsWith(name + '='));
 }
+function scrollToBottom() {
+    var chatDiv = document.getElementById("chat");
+    chatDiv.scrollTo(0,chatDiv.scrollHeight);
+    window.scrollTo(0, document.body.scrollHeight);
+
+}
+
+// Reference to the members' status in the database
+var currentUserId = getCookie('id');
+
+// Reference to the members' status in the database
+var membersStatusRef = firebase.database().ref('/members');
+
+// Render combined status string
+function renderCombinedStatus(usersStatus) {
+  var combinedStatusString = '';
+
+  for (var userId in usersStatus) {
+    if (userId !== currentUserId) {
+      combinedStatusString += userId + ": " + getLastSeenString(usersStatus[userId].status) + ', ';
+    }
+  }
+
+  // Remove trailing comma and space
+  combinedStatusString = combinedStatusString.replace(/, $/, '');
+
+  console.log(combinedStatusString);
+  document.querySelector('#status').innerText = combinedStatusString;
+  // Update your UI or perform any other action with the combined status string
+}
+
+// Set up real-time listener
+membersStatusRef.on('value', function(snapshot) {
+  var usersStatus = snapshot.val();
+  renderCombinedStatus(usersStatus);
+});
+
+function getLastSeenString(lastSeenTimestamp) {
+  if (lastSeenTimestamp === 'online') {
+    return 'Online';
+  } else {
+    var lastSeenDate = new Date(lastSeenTimestamp);
+    var currentDate = new Date();
+    var timeDifference = currentDate - lastSeenDate;
+
+    if (timeDifference < 24 * 60 * 60 * 1000) {
+      // Less than 24 hours ago
+      var formattedTime = lastSeenDate.toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' });
+      return 'Last seen ' + formattedTime;
+    } else if (timeDifference < 2 * 24 * 60 * 60 * 1000) {
+      // Less than 48 hours ago
+      return 'Last seen yesterday ' + lastSeenDate.toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' });
+    } else {
+      // More than 48 hours ago
+      var formattedDate = lastSeenDate.toLocaleDateString('en-US', { day: 'numeric', month: 'short' });
+      var formattedTime = lastSeenDate.toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' });
+      return 'Last seen on ' + formattedDate + ' at ' + formattedTime;
+    }
+  }
+}
 </script>
 <script>
 
@@ -319,7 +418,6 @@ $("#login-signup").hide();
         
 const id = getCookie('id');
 const pwd = getCookie('pwd');
-console.log(id + ' ' + pwd);
     loginUser(id, pwd);
 }else{
     document.querySelector('.footer').style.display = "none";

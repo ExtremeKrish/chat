@@ -209,6 +209,8 @@ function loginUser(username, password) {
                   });
             } else {
                 alert("Invalid username or password");
+                deleteCookie('id');
+                deleteCookie('pwd');
             }
         })
         .catch(function (error) {
@@ -355,6 +357,13 @@ function scrollToBottom() {
     window.scrollTo(0, document.body.scrollHeight);
 
 }
+function deleteCookie(cookieName) {
+  document.cookie = cookieName + '=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;';
+}
+
+// Example usage:
+// Replace 'yourCookieName' with the actual name of the cookie you want to delete
+
 
 // Reference to the members' status in the database
 var currentUserId = getCookie('id');
@@ -396,19 +405,20 @@ function getLastSeenString(lastSeenTimestamp) {
 
     if (timeDifference < 24 * 60 * 60 * 1000) {
       // Less than 24 hours ago
-      var formattedTime = lastSeenDate.toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' });
+      var formattedTime = lastSeenDate.toLocaleTimeString([], { hour: 'numeric', minute: '2-digit', hour12: true });
       return 'Last seen ' + formattedTime;
     } else if (timeDifference < 2 * 24 * 60 * 60 * 1000) {
       // Less than 48 hours ago
-      return 'Last seen yesterday ' + lastSeenDate.toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' });
+      return 'Last seen yesterday ' + lastSeenDate.toLocaleTimeString([], { hour: 'numeric', minute: '2-digit', hour12: true });
     } else {
       // More than 48 hours ago
       var formattedDate = lastSeenDate.toLocaleDateString('en-US', { day: 'numeric', month: 'short' });
-      var formattedTime = lastSeenDate.toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' });
-      return 'Last seen on ' + formattedDate + ' at ' + formattedTime;
+      var formattedTime = lastSeenDate.toLocaleTimeString([], { hour: 'numeric', minute: '2-digit', hour12: true });
+      return 'Last seen at' + formattedDate + ' at ' + formattedTime;
     }
   }
 }
+
 </script>
 <script>
 

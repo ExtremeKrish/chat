@@ -458,8 +458,22 @@ usersRef.once('value')
     if (users) {
       // Iterate over each user
       Object.values(users).forEach(user => {
-        
-  renderCombinedStatus(users);
+        // Assume 'username' and 'chatroomName' are defined earlier
+
+// Reference to the 'users' array inside the 'default' hashmap
+const _usersRef = database.ref(`chatrooms/${chatroomName}/users`);
+
+// Check if the username exists in the specified path
+_usersRef.once('value')
+  .then(snapshot => {
+    const users = snapshot.val();
+      renderCombinedStatus(users);
+
+  })
+  .catch(error => {
+    console.error('Error checking username:', error);
+  });
+
         // You can perform any operations within this loop
       });
     } else {

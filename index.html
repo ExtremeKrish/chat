@@ -238,6 +238,30 @@ $(".send-message").on("click", function (event) {
     } else {
         alert("Please enter a message and log in first");
     }
+    
+    
+    // Assume 'username' and 'chatroomName' are defined earlier
+
+// Reference to the 'users' array inside the 'default' hashmap
+const chatroomRef = db.ref(`chatrooms/${chatRoomId}/users`);
+
+// Check if the username exists in the specified path
+chatroomRef.once('value')
+  .then(snapshot => {
+    const users = snapshot.val();
+    if (users && Object.values(users).includes(getCookie('id'))) {
+    } else {
+    chatroomRef.push(getCookie('id'));
+    }
+  })
+  .catch(error => {
+    console.error('Error checking username:', error);
+  });
+
+    
+
+
+
 });
 
 function loginUser(username, password) {
@@ -420,7 +444,31 @@ function deleteCookie(cookieName) {
 var currentUserId = getCookie('id');
 
 // Reference to the members' status in the database
-var membersStatusRef = firebase.database().ref('/members');
+//var membersStatusRef = firebase.database().ref('/members');
+// Assume 'chatroomName' is defined earlier
+
+// Reference to the 'users' array inside the 'default' hashmap
+const usersRef = db.ref(`chatrooms/${chatRoomId}/users`);
+
+// Get all users in the specified path
+usersRef.once('value')
+  .then(snapshot => {
+    const users = snapshot.val();
+
+    if (users) {
+      // Iterate over each user
+      Object.values(users).forEach(user => {
+        
+  renderCombinedStatus(users);
+        // You can perform any operations within this loop
+      });
+    } else {
+      console.log(`No users found in ${chatroomName}/users`);
+    }
+  })
+  .catch(error => {
+    console.error('Error getting users:', error);
+  });
 
 // Render combined status string
 function renderCombinedStatus(usersStatus) {
@@ -442,10 +490,7 @@ function renderCombinedStatus(usersStatus) {
 }
 
 // Set up real-time listener
-membersStatusRef.on('value', function(snapshot) {
-  var usersStatus = snapshot.val();
-  renderCombinedStatus(usersStatus);
-});
+
 
 function getLastSeenString(lastSeenTimestamp) {
   if (lastSeenTimestamp === 'online') {

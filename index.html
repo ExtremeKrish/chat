@@ -109,19 +109,24 @@ display: none;
     -ms-overflow-style: none;  /* Internet Explorer 10+ */
     scrollbar-width: none;  /* Firefox */
 }
+small{
+  
+  overflow: hidden;
+  
+}
 </style>
 
 </head>
 
 <body class=""  >
-<nav class="navbar navbar-dark bg-dark navbar-expand-sm  align-items-start">
+<nav class="d-flex flex-row navbar navbar-dark bg-dark navbar-expand-sm  align-items-start">
 
-<div class="d-flex flex-column">
+<div class="d-flex flex-fill flex-column" >
 <div class="d-flex flex-row align-items-center">
 
-      <a class="navbar-brand mr-auto" href="#">Chatroom</a>
-      <svg data-toggle="modal" data-target="#exampleModal" height="28px" width="28px" xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="white" class="bi bi-asterisk" viewBox="0 0 16 16">
-  <path d="M8 0a1 1 0 0 1 1 1v5.268l4.562-2.634a1 1 0 1 1 1 1.732L10 8l4.562 2.634a1 1 0 1 1-1 1.732L9 9.732V15a1 1 0 1 1-2 0V9.732l-4.562 2.634a1 1 0 1 1-1-1.732L6 8 1.438 5.366a1 1 0 0 1 1-1.732L7 6.268V1a1 1 0 0 1 1-1"/>
+      <a class="navbar-brand mr-auto flex-fill" href="#">Chatroom</a>
+<svg data-toggle="modal" data-target="#exampleModal" height="28px" width="28px"  xmlns="http://www.w3.org/2000/svg"  fill="white" class="bi bi-list" viewBox="0 0 16 16">
+  <path fill-rule="evenodd" d="M2.5 12a.5.5 0 0 1 .5-.5h10a.5.5 0 0 1 0 1H3a.5.5 0 0 1-.5-.5m0-4a.5.5 0 0 1 .5-.5h10a.5.5 0 0 1 0 1H3a.5.5 0 0 1-.5-.5m0-4a.5.5 0 0 1 .5-.5h10a.5.5 0 0 1 0 1H3a.5.5 0 0 1-.5-.5"/>
 </svg>
    </div>
     <small id="status" style="color: white">...</small>
@@ -148,24 +153,29 @@ display: none;
   <div class="modal-dialog" role="document">
     <div class="modal-content">
       <div class="modal-header">
-        <h5 class="modal-title" id="exampleModalLabel">Modal title</h5>
+        <h5 class="modal-title" id="exampleModalLabel">
+          <select class="form-control form-control-lg">
+  <option>Chatroom 1</option>
+  <option>Chatroom 2</option>
+  <option>Chatroom 3</option>
+  <option>Chatroom 4</option>
+  <option disabled>Chatroom 5</option>
+</select>
+        </h5>
         <button type="button" class="close" data-dismiss="modal" aria-label="Close">
           <span aria-hidden="true">&times;</span>
         </button>
       </div>
       <div class="modal-body">
-        <div class="form-check">
-  <input class="form-check-input" type="radio" name="exampleRadios" id="exampleRadios1" value="option1" checked >
-  <label class="form-check-label" for="exampleRadios1">
-    Chatroom 1 (default)
-  </label>
-</div>
-<div class="form-check">
-  <input data-dismiss="modal" class="form-check-input" type="radio" name="exampleRadios" id="exampleRadios2" value="option2">
-  <label class="form-check-label" for="exampleRadios2">
-    Second Chatroom
-  </label>
-</div>
+<ul class="list-group" id="users">
+  <!-- <li class="list-group-item">
+        <div class="d-flex flex-column">
+        <b>Krish</b>
+        <small id="status">...</small>
+        </div>-->
+  </li>
+ 
+</ul>
 
       </div>
       <div class="modal-footer">
@@ -280,7 +290,7 @@ function createUser(username, password) {
                     } else {
                     saveCookie('id', username, 365); // Saves 'myCookie' with value 'cookieValue' that expires in 7 days
                      saveCookie('pwd', password, 365); 
-                
+database.ref(`chatrooms/${chatRoomId}/users`).push(username);
                         hideLoginSignup();
                         listenForMessages();
                     }
@@ -414,11 +424,12 @@ var membersStatusRef = firebase.database().ref('/members');
 
 // Render combined status string
 function renderCombinedStatus(usersStatus) {
-  var combinedStatusString = '';
+      var combinedStatusString = '<li class="list-group-item active"><div class="d-flex flex-column"><b>'+currentUserId+'</b><small id="status">Online</small></div></li>'
 
   for (var userId in usersStatus) {
     if (userId !== currentUserId) {
-      combinedStatusString += userId + ": " + getLastSeenString(usersStatus[userId].status) + ', ';
+      combinedStatusString += '   <li class="list-group-item"><div class="d-flex flex-column"><b>'+userId+'</b><small id="status">'+getLastSeenString(usersStatus[userId].status)+'</small></div></li>'
+      //combinedStatusString += userId + ": " + getLastSeenString(usersStatus[userId].status) + ', ';
     }
   }
 
@@ -426,7 +437,7 @@ function renderCombinedStatus(usersStatus) {
   combinedStatusString = combinedStatusString.replace(/, $/, '');
 
   //console.log(combinedStatusString);
-  document.querySelector('#status').innerText = combinedStatusString;
+  document.querySelector('#users').innerHTML = combinedStatusString;
   // Update your UI or perform any other action with the combined status string
 }
 

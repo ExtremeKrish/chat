@@ -314,7 +314,7 @@ function createUser(username, password) {
                     } else {
                         saveCookie('id', username, 365); // Saves 'myCookie' with value 'cookieValue' that expires in 7 days
                         saveCookie('pwd', password, 365);
-                        database.ref(`chatrooms/${chatRoomId}/users`).push(username);
+                        db.ref(`chatrooms/${chatRoomId}/users`).push(username);
                         hideLoginSignup();
                         listenForMessages();
                     }

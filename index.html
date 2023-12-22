@@ -192,11 +192,12 @@ small{
 
 <script type="text/javascript">
 var chatRoomId = "default";
-function req(){// The latest spec has updated this method to a promise-based syntax that works like this:
-Notification.requestPermission();
 
-// Previously, the syntax was based on a simple callback; this version is now deprecated:
-Notification.requestPermission(callback);
+function req() { // The latest spec has updated this method to a promise-based syntax that works like this:
+    Notification.requestPermission();
+
+    // Previously, the syntax was based on a simple callback; this version is now deprecated:
+    Notification.requestPermission(callback);
 }
 
 var config = {
@@ -210,13 +211,13 @@ var config = {
     measurementId: "G-FPP98JDRNZ"
 };
 firebase.initializeApp(config);
-    $("#area").hide();
-    document.querySelector('.footer').style.display = "none";
+$("#area").hide();
+document.querySelector('.footer').style.display = "none";
 var db = firebase.database();
 
 
 
-$(".signup").on("click", function (event) {
+$(".signup").on("click", function(event) {
     event.preventDefault();
 
     var username = $("#username").val().trim();
@@ -225,10 +226,10 @@ $(".signup").on("click", function (event) {
     createUser(username, password);
 });
 
-$(".send-message").on("click", function (event) {
+$(".send-message").on("click", function(event) {
     event.preventDefault();
-               var inputField = document.getElementById('message');
-        inputField.focus();
+    var inputField = document.getElementById('message');
+    inputField.focus();
     var message = $("#message").val().trim();
     var username = getCookie('id');
 
@@ -238,27 +239,25 @@ $(".send-message").on("click", function (event) {
     } else {
         alert("Please enter a message and log in first");
     }
-    
-    
+
+
     // Assume 'username' and 'chatroomName' are defined earlier
 
-// Reference to the 'users' array inside the 'default' hashmap
-const chatroomRef = db.ref(`chatrooms/${chatRoomId}/users`);
+    // Reference to the 'users' array inside the 'default' hashmap
+    const chatroomRef = db.ref(`chatrooms/${chatRoomId}/users`);
 
-// Check if the username exists in the specified path
-chatroomRef.once('value')
-  .then(snapshot => {
-    const users = snapshot.val();
-    if (users && Object.values(users).includes(getCookie('id'))) {
-    } else {
-    chatroomRef.push(getCookie('id'));
-    }
-  })
-  .catch(error => {
-    console.error('Error checking username:', error);
-  });
+    // Check if the username exists in the specified path
+    chatroomRef.once('value')
+        .then(snapshot => {
+            const users = snapshot.val();
+            if (users && Object.values(users).includes(getCookie('id'))) {} else {
+                chatroomRef.push(getCookie('id'));
+            }
+        })
+        .catch(error => {
+            console.error('Error checking username:', error);
+        });
 
-    
 
 
 
@@ -268,37 +267,38 @@ function loginUser(username, password) {
     var userRef = db.ref("members/" + username);
 
     userRef.once("value")
-        .then(function (snapshot) {
+        .then(function(snapshot) {
             var user = snapshot.val();
             if (user && user.password === password) {
                 hideLoginSignup();
                 listenForMessages();
                 saveCookie('id', username, 365); // Saves 'myCookie' with value 'cookieValue' that expires in 7 days
-                saveCookie('pwd', password, 365); 
-               // console.log(getCookie("id"));
+                saveCookie('pwd', password, 365);
+                // console.log(getCookie("id"));
                 var userStatusRef = firebase.database().ref('members/' + username + '/status');
-                  firebase.database().ref('.info/connected').on('value', function(snapshot) {
+                firebase.database().ref('.info/connected').on('value', function(snapshot) {
                     if (snapshot.val()) {
-                    userStatusRef.onDisconnect().set(firebase.database.ServerValue.TIMESTAMP);                      userStatusRef.set('online');
+                        userStatusRef.onDisconnect().set(firebase.database.ServerValue.TIMESTAMP);
+                        userStatusRef.set('online');
                     }
-                  });
+                });
             } else {
                 alert("Invalid username or password");
                 deleteCookie('id');
                 deleteCookie('pwd');
             }
         })
-        .catch(function (error) {
+        .catch(function(error) {
             console.error("Error logging in:", error);
         });
-        
+
 }
 
 function createUser(username, password) {
     var userRef = db.ref("members/" + username);
 
     userRef.once("value")
-        .then(function (snapshot) {
+        .then(function(snapshot) {
             var user = snapshot.val();
 
             if (user) {
@@ -308,28 +308,28 @@ function createUser(username, password) {
                 // Create user
                 userRef.set({
                     password: password
-                }, function (error) {
+                }, function(error) {
                     if (error) {
                         console.error("Error creating user:", error);
                     } else {
-                    saveCookie('id', username, 365); // Saves 'myCookie' with value 'cookieValue' that expires in 7 days
-                     saveCookie('pwd', password, 365); 
-database.ref(`chatrooms/${chatRoomId}/users`).push(username);
+                        saveCookie('id', username, 365); // Saves 'myCookie' with value 'cookieValue' that expires in 7 days
+                        saveCookie('pwd', password, 365);
+                        database.ref(`chatrooms/${chatRoomId}/users`).push(username);
                         hideLoginSignup();
                         listenForMessages();
                     }
                 });
             }
         })
-        .catch(function (error) {
+        .catch(function(error) {
             console.error("Error creating user:", error);
         });
 }
 
 function hideLoginSignup() {
     $("#login-signup").hide();
-        $("#area").show();
-            document.querySelector('.footer').style.display = "flex";
+    $("#area").show();
+    document.querySelector('.footer').style.display = "flex";
 }
 
 function sendMessage(username, message) {
@@ -344,11 +344,11 @@ function sendMessage(username, message) {
 }
 
 function listenForMessages() {
-    var chatRef = db.ref("chat/"+chatRoomId);
+    var chatRef = db.ref("chat/" + chatRoomId);
 
-    chatRef.on("child_added", function (snapshot) {
+    chatRef.on("child_added", function(snapshot) {
         var message = snapshot.val();
-        
+
         displayMessage(message.username, message.message, message.timestamp);
     });
 }
@@ -358,10 +358,10 @@ function displayMessage(username, message, timestamp) {
     var messageDiv_parent = document.createElement("div");
 
     var messageDiv = document.createElement("div");
-if(username  == getCookie("id")){
-  messageDiv.classList += "self";
-  
-}
+    if (username == getCookie("id")) {
+        messageDiv.classList += "self";
+
+    }
     // Check for links in the message and convert them to clickable HTML links
     var messageWithLinks = convertLinks(message);
 
@@ -383,7 +383,7 @@ function convertLinks(message) {
     var urlRegex = /(https?:\/\/[^\s]+)/g;
 
     // Replace URLs with clickable HTML links
-    var messageWithLinks = message.replace(urlRegex, function (url) {
+    var messageWithLinks = message.replace(urlRegex, function(url) {
         return '<a href="' + url + '" target="_blank">' + url + '</a>';
     });
 
@@ -392,48 +392,53 @@ function convertLinks(message) {
 
 
 function formatDate(milliseconds) {
-  const date = new Date(milliseconds);
+    const date = new Date(milliseconds);
 
-  const options = {
-    hour: '2-digit',
-    minute: '2-digit',
-    hour12: true
-  };
+    const options = {
+        hour: '2-digit',
+        minute: '2-digit',
+        hour12: true
+    };
 
-  return new Intl.DateTimeFormat('en-US', options).format(date);
+    return new Intl.DateTimeFormat('en-US', options).format(date);
 }
+
 function getCookie(cname) {
-  let name = cname + "=";
-  let decodedCookie = decodeURIComponent(document.cookie);
-  let ca = decodedCookie.split(';');
-  for(let i = 0; i <ca.length; i++) {
-    let c = ca[i];
-    while (c.charAt(0) == ' ') {
-      c = c.substring(1);
+    let name = cname + "=";
+    let decodedCookie = decodeURIComponent(document.cookie);
+    let ca = decodedCookie.split(';');
+    for (let i = 0; i < ca.length; i++) {
+        let c = ca[i];
+        while (c.charAt(0) == ' ') {
+            c = c.substring(1);
+        }
+        if (c.indexOf(name) == 0) {
+            return c.substring(name.length, c.length);
+        }
     }
-    if (c.indexOf(name) == 0) {
-      return c.substring(name.length, c.length);
-    }
-  }
-  return "";
+    return "";
 }
+
 function saveCookie(cname, cvalue, exdays) {
-  const d = new Date();
-  d.setTime(d.getTime() + (exdays*24*60*60*1000));
-  let expires = "expires="+ d.toUTCString();
-  document.cookie = cname + "=" + cvalue + ";" + expires + ";path=/";
+    const d = new Date();
+    d.setTime(d.getTime() + (exdays * 24 * 60 * 60 * 1000));
+    let expires = "expires=" + d.toUTCString();
+    document.cookie = cname + "=" + cvalue + ";" + expires + ";path=/";
 }
+
 function cookieExists(name) {
     return document.cookie.split(';').some(cookie => cookie.trim().startsWith(name + '='));
 }
+
 function scrollToBottom() {
     var chatDiv = document.getElementById("chat");
-    chatDiv.scrollTo(0,chatDiv.scrollHeight);
+    chatDiv.scrollTo(0, chatDiv.scrollHeight);
     window.scrollTo(0, document.body.scrollHeight);
 
 }
+
 function deleteCookie(cookieName) {
-  document.cookie = cookieName + '=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;';
+    document.cookie = cookieName + '=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;';
 }
 
 // Example usage:
@@ -453,96 +458,129 @@ const usersRef = db.ref(`chatrooms/${chatRoomId}/users`);
 // Get all users in the specified path
 usersRef.once('value')
   .then(snapshot => {
-    const users = snapshot.val();
+    const userNames = Object.values(snapshot.val());
 
-    if (users) {
-      // Iterate over each user
-      Object.values(users).forEach(user => {
-        // Assume 'username' and 'chatroomName' are defined earlier
+    if (userNames) {
+      // Hashmap to store user details with keys
+      const userDetailsMap = {};
 
-// Reference to the 'users' array inside the 'default' hashmap
-const _usersRef = database.ref(`chatrooms/${chatroomName}/users`);
+      // Iterate over each username
+      userNames.forEach(userName => {
+        // Reference to the user's details inside the 'members' hashmap
+        const userRef = db.ref(`members/${userName}`);
 
-// Check if the username exists in the specified path
-_usersRef.once('value')
-  .then(snapshot => {
-    const users = snapshot.val();
-      renderCombinedStatus(users);
+        // Check if the user details exist in the specified path
+        userRef.once('value')
+          .then(snapshot => {
+            const userDetails = snapshot.val();
+            
+            if (userDetails) {
+              // Include the key in the user details and add to the hashmap
+              userDetailsMap[userName] = userDetails;
+            } else {
+              console.log(`No details found for user: ${userName}`);
+            }
 
-  })
-  .catch(error => {
-    console.error('Error checking username:', error);
-  });
-
-        // You can perform any operations within this loop
+            // Check if all user details have been collected
+            if (Object.keys(userDetailsMap).length === userNames.length) {
+              // Render the combined status for all users
+              renderCombinedStatus(userDetailsMap);
+            }
+          })
+          .catch(error => {
+            console.error('Error getting user details:', error);
+          });
       });
     } else {
-      console.log(`No users found in ${chatroomName}/users`);
+      console.log(`No user names found in ${chatRoomId}/users`);
     }
   })
   .catch(error => {
-    console.error('Error getting users:', error);
+    console.error('Error getting user names:', error);
   });
+
+
 
 // Render combined status string
 function renderCombinedStatus(usersStatus) {
-      var combinedStatusString = '<li class="list-group-item active"><div class="d-flex flex-column"><b>'+currentUserId+'</b><small id="status">Online</small></div></li>'
+  console.log(JSON.stringify(usersStatus))
+    var combinedStatusString = '<li class="list-group-item active"><div class="d-flex flex-column"><b>' + currentUserId + '</b><small id="status">Online</small></div></li>'
 
-  for (var userId in usersStatus) {
-    if (userId !== currentUserId) {
-      combinedStatusString += '   <li class="list-group-item"><div class="d-flex flex-column"><b>'+userId+'</b><small id="status">'+getLastSeenString(usersStatus[userId].status)+'</small></div></li>'
-      //combinedStatusString += userId + ": " + getLastSeenString(usersStatus[userId].status) + ', ';
+    for (var userId in usersStatus) {
+        if (userId !== currentUserId) {
+            combinedStatusString += '   <li class="list-group-item"><div class="d-flex flex-column"><b>' + userId + '</b><small id="status">' + getLastSeenString(usersStatus[userId].status) + '</small></div></li>'
+            //combinedStatusString += userId + ": " + getLastSeenString(usersStatus[userId].status) + ', ';
+        }
     }
-  }
 
-  // Remove trailing comma and space
-  combinedStatusString = combinedStatusString.replace(/, $/, '');
+    // Remove trailing comma and space
+    combinedStatusString = combinedStatusString.replace(/, $/, '');
 
-  //console.log(combinedStatusString);
-  document.querySelector('#users').innerHTML = combinedStatusString;
-  // Update your UI or perform any other action with the combined status string
+    //console.log(combinedStatusString);
+    document.querySelector('#users').innerHTML = combinedStatusString;
+    // Update your UI or perform any other action with the combined status string
 }
 
 // Set up real-time listener
 
 
 function getLastSeenString(lastSeenTimestamp) {
-  if (lastSeenTimestamp === 'online') {
-    return 'Online';
-  } else if(lastSeenTimestamp === 'Typing'){
-    return 'Typing...';
-    
-  } else{
-    var lastSeenDate = new Date(lastSeenTimestamp);
-    var currentDate = new Date();
-    var timeDifference = currentDate - lastSeenDate;
+    if (lastSeenTimestamp === 'online') {
+        return 'Online';
+    } else if (lastSeenTimestamp === 'Typing') {
+        return 'Typing...';
 
-    if (timeDifference < 24 * 60 * 60 * 1000) {
-      // Less than 24 hours ago
-      var formattedTime = lastSeenDate.toLocaleTimeString([], { hour: 'numeric', minute: '2-digit', hour12: true });
-      return 'Last seen ' + formattedTime;
-    } else if (timeDifference < 2 * 24 * 60 * 60 * 1000) {
-      // Less than 48 hours ago
-      return 'Last seen yesterday ' + lastSeenDate.toLocaleTimeString([], { hour: 'numeric', minute: '2-digit', hour12: true });
     } else {
-      // More than 48 hours ago
-      var formattedDate = lastSeenDate.toLocaleDateString('en-US', { day: 'numeric', month: 'short' });
-      var formattedTime = lastSeenDate.toLocaleTimeString([], { hour: 'numeric', minute: '2-digit', hour12: true });
-      return 'Last seen at' + formattedDate + ' at ' + formattedTime;
-    }
-  }
-}
-var userStatusRef = firebase.database().ref('members/' + getCookie('id') );
-                  let timeout;
-function handleTyping() {
-  userStatusRef.update({ status: "Typing"});
+        var lastSeenDate = new Date(lastSeenTimestamp);
+        var currentDate = new Date();
+        var timeDifference = currentDate - lastSeenDate;
 
-  // Use a timeout to detect when the user stops typing
-  clearTimeout(timeout);
-  
-   timeout = setTimeout(() => {
-    userStatusRef.update({ status:"online" });
-  }, 2000); // Adjust the timeout duration as needed
+        if (timeDifference < 24 * 60 * 60 * 1000) {
+            // Less than 24 hours ago
+            var formattedTime = lastSeenDate.toLocaleTimeString([], {
+                hour: 'numeric',
+                minute: '2-digit',
+                hour12: true
+            });
+            return 'Last seen ' + formattedTime;
+        } else if (timeDifference < 2 * 24 * 60 * 60 * 1000) {
+            // Less than 48 hours ago
+            return 'Last seen yesterday ' + lastSeenDate.toLocaleTimeString([], {
+                hour: 'numeric',
+                minute: '2-digit',
+                hour12: true
+            });
+        } else {
+            // More than 48 hours ago
+            var formattedDate = lastSeenDate.toLocaleDateString('en-US', {
+                day: 'numeric',
+                month: 'short'
+            });
+            var formattedTime = lastSeenDate.toLocaleTimeString([], {
+                hour: 'numeric',
+                minute: '2-digit',
+                hour12: true
+            });
+            return 'Last seen at' + formattedDate + ' at ' + formattedTime;
+        }
+    }
+}
+var userStatusRef = firebase.database().ref('members/' + getCookie('id'));
+let timeout;
+
+function handleTyping() {
+    userStatusRef.update({
+        status: "Typing"
+    });
+
+    // Use a timeout to detect when the user stops typing
+    clearTimeout(timeout);
+
+    timeout = setTimeout(() => {
+        userStatusRef.update({
+            status: "online"
+        });
+    }, 2000); // Adjust the timeout duration as needed
 }
 </script>
 <script>

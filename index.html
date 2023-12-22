@@ -439,7 +439,10 @@ membersStatusRef.on('value', function(snapshot) {
 function getLastSeenString(lastSeenTimestamp) {
   if (lastSeenTimestamp === 'online') {
     return 'Online';
-  } else {
+  } else if(lastSeenTimestamp.startsWith('Typing')){
+    return 'Typing...';
+    
+  } else{
     var lastSeenDate = new Date(lastSeenTimestamp);
     var currentDate = new Date();
     var timeDifference = currentDate - lastSeenDate;
@@ -462,7 +465,7 @@ function getLastSeenString(lastSeenTimestamp) {
 var userStatusRef = firebase.database().ref('members/' + getCookie('id') );
                   let timeout;
 function handleTyping() {
-  userStatusRef.update({ status: "Typing..."});
+  userStatusRef.update({ status: "Typing"});
 
   // Use a timeout to detect when the user stops typing
   clearTimeout(timeout);

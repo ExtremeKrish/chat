@@ -437,7 +437,6 @@ membersStatusRef.on('value', function(snapshot) {
 });
 
 function getLastSeenString(lastSeenTimestamp) {
-  console.log(lastSeenTimestamp)
   if (lastSeenTimestamp === 'online') {
     return 'Online';
   } else if(lastSeenTimestamp === 'Typing'){
@@ -472,8 +471,8 @@ function handleTyping() {
   clearTimeout(timeout);
   
    timeout = setTimeout(() => {
-    userStatusRef.update({ status:"Online" });
-  }, 5000); // Adjust the timeout duration as needed
+    userStatusRef.update({ status:"online" });
+  }, 2000); // Adjust the timeout duration as needed
 }
 </script>
 <script>

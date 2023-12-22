@@ -455,51 +455,39 @@ var currentUserId = getCookie('id');
 // Reference to the 'users' array inside the 'default' hashmap
 const usersRef = db.ref(`chatrooms/${chatRoomId}/users`);
 
-// Get all users in the specified path
-usersRef.once('value')
-  .then(snapshot => {
-    const userNames = Object.values(snapshot.val());
+// Use on('value') to listen for changes
+usersRef.on('value', snapshot => {
+      const userNames = Object.values(snapshot.val());
 
-    if (userNames) {
-      // Hashmap to store user details with keys
-      const userDetailsMap = {};
+      if (userNames) {
+        const userDetailsMap = {};
 
-      // Iterate over each username
-      userNames.forEach(userName => {
-        // Reference to the user's details inside the 'members' hashmap
-        const userRef = db.ref(`members/${userName}`);
+        userNames.forEach(userName => {
+            const userRef = db.ref(`members/${userName}`);
 
-        // Check if the user details exist in the specified path
-        userRef.once('value')
-          .then(snapshot => {
-            const userDetails = snapshot.val();
-            
-            if (userDetails) {
-              // Include the key in the user details and add to the hashmap
-              userDetailsMap[userName] = userDetails;
-            } else {
-              console.log(`No details found for user: ${userName}`);
-            }
+            // Use on('value') to listen for changes in user details
+            userRef.on('value', snapshot => {
+              const userDetails = snapshot.val();
 
-            // Check if all user details have been collected
-            if (Object.keys(userDetailsMap).length === userNames.length) {
-              // Render the combined status for all users
+              if (userDetails) {
+                userDetailsMap[userName] = userDetails;
+              } else {
+                console.log(`No details found for user: ${userName}`);
+                // Optionally, remove the user from userDetailsMap if needed
+                delete userDetailsMap[userName];
+              }
+
+              // Render the combined status for all users whenever data changes
               renderCombinedStatus(userDetailsMap);
-            }
-          })
-          .catch(error => {
-            console.error('Error getting user details:', error);
-          });
+            });
+          }
+        }
+        else {
+          console.log(`No user names found in ${chatRoomId}/users`);
+        }
+      }, error => {
+        console.error('Error getting user names:', error);
       });
-    } else {
-      console.log(`No user names found in ${chatRoomId}/users`);
-    }
-  })
-  .catch(error => {
-    console.error('Error getting user names:', error);
-  });
-
-
 
 // Render combined status string
 function renderCombinedStatus(usersStatus) {

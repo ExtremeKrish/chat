@@ -114,11 +114,16 @@ display: none;
 </head>
 
 <body class=""  >
-<nav class="navbar navbar-dark bg-dark navbar-expand-sm flex-nowrap align-items-start">
+<nav class="navbar navbar-dark bg-dark navbar-expand-sm  align-items-start">
 
-  
 <div class="d-flex flex-column">
+<div class="d-flex flex-row align-items-center">
+
       <a class="navbar-brand mr-auto" href="#">Chatroom</a>
+      <svg data-toggle="modal" data-target="#exampleModal" height="28px" width="28px" xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="white" class="bi bi-asterisk" viewBox="0 0 16 16">
+  <path d="M8 0a1 1 0 0 1 1 1v5.268l4.562-2.634a1 1 0 1 1 1 1.732L10 8l4.562 2.634a1 1 0 1 1-1 1.732L9 9.732V15a1 1 0 1 1-2 0V9.732l-4.562 2.634a1 1 0 1 1-1-1.732L6 8 1.438 5.366a1 1 0 0 1 1-1.732L7 6.268V1a1 1 0 0 1 1-1"/>
+</svg>
+   </div>
     <small id="status" style="color: white">...</small>
   </div>
 </nav>
@@ -133,14 +138,50 @@ display: none;
     <section id="area" >
             <div id="chat"></div>
 <section class="footer">
-<input type="text" id="message" placeholder="Type your message">
+<input type="text" id="message" placeholder="Type your message" oninput="handleTyping()">
 <button class="send-message"><svg fill="white" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" version="1.1" class="mdi mdi-send" width="24" height="24" viewBox="0 0 24 24"><path d="M2,21L23,12L2,3V10L17,12L2,14V21Z" /></svg></button>
 </section>
 </section>
+
+
+<div class="modal fade" style="background-color: black !important;" id="exampleModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="exampleModalLabel">Modal title</h5>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body">
+        <div class="form-check">
+  <input class="form-check-input" type="radio" name="exampleRadios" id="exampleRadios1" value="option1" checked >
+  <label class="form-check-label" for="exampleRadios1">
+    Chatroom 1 (default)
+  </label>
+</div>
+<div class="form-check">
+  <input data-dismiss="modal" class="form-check-input" type="radio" name="exampleRadios" id="exampleRadios2" value="option2">
+  <label class="form-check-label" for="exampleRadios2">
+    Second Chatroom
+  </label>
+</div>
+
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+
     <script type="text/javascript" src="app.js"></script>
 </body>
 
 <script type="text/javascript">
+var chatRoomId = "default";
 function req(){// The latest spec has updated this method to a promise-based syntax that works like this:
 Notification.requestPermission();
 
@@ -200,7 +241,7 @@ function loginUser(username, password) {
                 listenForMessages();
                 saveCookie('id', username, 365); // Saves 'myCookie' with value 'cookieValue' that expires in 7 days
                 saveCookie('pwd', password, 365); 
-                console.log(getCookie("id"));
+               // console.log(getCookie("id"));
                 var userStatusRef = firebase.database().ref('members/' + username + '/status');
                   firebase.database().ref('.info/connected').on('value', function(snapshot) {
                     if (snapshot.val()) {
@@ -258,7 +299,7 @@ function hideLoginSignup() {
 }
 
 function sendMessage(username, message) {
-    var chatRef = db.ref("chat");
+    var chatRef = db.ref("chat/" + chatRoomId);
     var timestamp = firebase.database.ServerValue.TIMESTAMP;
 
     chatRef.push({
@@ -269,7 +310,7 @@ function sendMessage(username, message) {
 }
 
 function listenForMessages() {
-    var chatRef = db.ref("chat");
+    var chatRef = db.ref("chat/"+chatRoomId);
 
     chatRef.on("child_added", function (snapshot) {
         var message = snapshot.val();
@@ -384,7 +425,7 @@ function renderCombinedStatus(usersStatus) {
   // Remove trailing comma and space
   combinedStatusString = combinedStatusString.replace(/, $/, '');
 
-  console.log(combinedStatusString);
+  //console.log(combinedStatusString);
   document.querySelector('#status').innerText = combinedStatusString;
   // Update your UI or perform any other action with the combined status string
 }
@@ -418,7 +459,18 @@ function getLastSeenString(lastSeenTimestamp) {
     }
   }
 }
+var userStatusRef = firebase.database().ref('members/' + getCookie('id') );
+                  let timeout;
+function handleTyping() {
+  userStatusRef.update({ status: "Typing..."});
 
+  // Use a timeout to detect when the user stops typing
+  clearTimeout(timeout);
+  
+   timeout = setTimeout(() => {
+    userStatusRef.update({ status:"Online" });
+  }, 5000); // Adjust the timeout duration as needed
+}
 </script>
 <script>
 

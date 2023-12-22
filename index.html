@@ -437,9 +437,10 @@ membersStatusRef.on('value', function(snapshot) {
 });
 
 function getLastSeenString(lastSeenTimestamp) {
+  console.log(lastSeenTimestamp)
   if (lastSeenTimestamp === 'online') {
     return 'Online';
-  } else if(lastSeenTimestamp.startsWith('Typing')){
+  } else if(lastSeenTimestamp === 'Typing'){
     return 'Typing...';
     
   } else{

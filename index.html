@@ -315,13 +315,7 @@ function loginUser(username, password) {
                 saveCookie('id', username, 365); // Saves 'myCookie' with value 'cookieValue' that expires in 7 days
                 saveCookie('pwd', password, 365);
                 // console.log(getCookie("id"));
-                var userStatusRef = firebase.database().ref('members/' + username + '/status');
-                firebase.database().ref('.info/connected').on('value', function(snapshot) {
-                    if (snapshot.val()) {
-                        userStatusRef.onDisconnect().set(firebase.database.ServerValue.TIMESTAMP);
-                        userStatusRef.set('online');
-                    }
-                });
+               
             } else {
                 alert("Invalid username or password");
                 deleteCookie('id');
@@ -391,6 +385,13 @@ updateUsers();
 
         displayMessage(message.username, message.message, message.timestamp);
     });
+     var userStatusRef = firebase.database().ref('members/' + username + '/status');
+                firebase.database().ref('.info/connected').on('value', function(snapshot) {
+                    if (snapshot.val()) {
+                        userStatusRef.onDisconnect().set(firebase.database.ServerValue.TIMESTAMP);
+                        userStatusRef.set('online');
+                    }
+                });
 }
 
 function displayMessage(username, message, timestamp) {

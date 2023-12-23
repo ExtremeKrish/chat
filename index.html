@@ -154,11 +154,11 @@ small{
     <div class="modal-content">
       <div class="modal-header">
         <h5 class="modal-title" id="exampleModalLabel">
-          <select class="form-control form-control-lg">
-  <option>Chatroom 1</option>
-  <option>Chatroom 2</option>
-  <option>Chatroom 3</option>
-  <option>Chatroom 4</option>
+          <select class="form-control form-control-lg" onchange="changeChatroom(this.value)">
+  <option value="default">Chatroom 1</option>
+  <option value="alpha">Chatroom 2</option>
+  <option value="beta">Chatroom 3</option>
+  <option value="gama">Chatroom 4</option>
   <option disabled>Chatroom 5</option>
 </select>
         </h5>
@@ -191,7 +191,14 @@ small{
 </body>
 
 <script type="text/javascript">
-var chatRoomId = "default";
+var chatRoomId;
+const urlParams = new URLSearchParams(window.location.search);
+ // This will log 'angelita' if the URL parameter is present.
+if(urlParams.get('chatid') == null){
+chatRoomId = "default";
+}else{
+  chatRoomId = urlParams.get('chatid');
+}
 
 function req() { // The latest spec has updated this method to a promise-based syntax that works like this:
     Notification.requestPermission();
@@ -345,7 +352,7 @@ function sendMessage(username, message) {
 
 function listenForMessages() {
     var chatRef = db.ref("chat/" + chatRoomId);
-
+updateUsers();
     chatRef.on("child_added", function(snapshot) {
         var message = snapshot.val();
 
@@ -377,7 +384,12 @@ function displayMessage(username, message, timestamp) {
     // You may want to enhance this further, such as scrolling to the latest message.
     // For simplicity, this example just appends messages to the chat div.
 }
-
+function changeChatroom(option) {
+document.getElementById("chat").innerHTML='';
+chatRoomId = option;
+     listenForMessages();
+  
+}
 function convertLinks(message) {
     // Regular expression to find URLs within the message
     var urlRegex = /(https?:\/\/[^\s]+)/g;
@@ -451,7 +463,7 @@ var currentUserId = getCookie('id');
 // Reference to the members' status in the database
 //var membersStatusRef = firebase.database().ref('/members');
 // Assume 'chatroomName' is defined earlier
-
+function updateUsers(){
 // Reference to the 'users' array inside the 'default' hashmap
 const usersRef = db.ref(`chatrooms/${chatRoomId}/users`);
 
@@ -491,12 +503,11 @@ usersRef.on('value', snapshot => {
     }
   })
 
-
+}
 
 
 // Render combined status string
 function renderCombinedStatus(usersStatus) {
-  console.log(JSON.stringify(usersStatus))
     var combinedStatusString = '<li class="list-group-item active"><div class="d-flex flex-column"><b>' + currentUserId + '</b><small id="status">Online</small></div></li>'
 
     for (var userId in usersStatus) {

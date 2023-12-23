@@ -154,7 +154,7 @@ small{
     <div class="modal-content">
       <div class="modal-header">
         <h5 class="modal-title" id="exampleModalLabel">
-          <select class="form-control form-control-lg" onchange="changeChatroom(this.value)">
+          <select id="select" class="form-control form-control-lg" onchange="changeChatroom(this.value)">
   <option value="default">Chatroom 1</option>
   <option value="alpha">Chatroom 2</option>
   <option value="beta">Chatroom 3</option>
@@ -198,7 +198,31 @@ if(urlParams.get('chatid') == null){
 chatRoomId = "default";
 }else{
   chatRoomId = urlParams.get('chatid');
+  selectOptionByValue(urlParams.get('chatid'));
 }
+
+function selectOptionByValue(value) {
+      var selectElement = document.getElementById('select');
+      var optionFound = false;
+
+      // Check if the value matches any existing options
+      for (var i = 0; i < selectElement.options.length; i++) {
+        if (selectElement.options[i].value === value) {
+          selectElement.selectedIndex = i;
+          optionFound = true;
+          break;
+        }
+      }
+
+      // If the value doesn't match, create a new option and select it
+      if (!optionFound) {
+        var newOption = document.createElement('option');
+        newOption.value = value;
+        newOption.text = "New Option: " + value;
+        selectElement.add(newOption);
+        selectElement.value = value; // Select the new option
+      }
+    }
 
 function req() { // The latest spec has updated this method to a promise-based syntax that works like this:
     Notification.requestPermission();
